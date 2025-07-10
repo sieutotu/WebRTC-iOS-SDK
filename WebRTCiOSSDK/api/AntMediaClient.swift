@@ -1025,11 +1025,11 @@ open class AntMediaClient: NSObject, AntMediaClientProtocol {
                 let streams = message[STREAMS] as! [String]
                 self.joinedRoom(streamId: streamId, streams: streams)
                 
-            } else if definition == BROADCAST_OBJECT_NOTIFICATION { // broadcastObject
-                let broadcastString = message["broadcast"] as! String
+            } else if definition == BROADCAST_OBJECT_NOTIFICATION, let broadcastString = message["broadcast"] as? String, let streamId = message[STREAM_ID] as? String  { // broadcastObject
+                
                 let broadcastObject = broadcastString.toJSON()
                 self.delegate?.onLoadBroadcastObject(
-                    streamId: message[STREAM_ID] as! String,
+                    streamId: streamId,
                     message: broadcastObject ?? [:]
                 )
                 
