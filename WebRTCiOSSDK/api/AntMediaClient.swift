@@ -128,6 +128,8 @@ open class AntMediaClient: NSObject, AntMediaClientProtocol {
     var disableTrackId: String?
     
     var reconnectIfRequiresScheduled: Bool = false
+    
+    private var metaData: String?
         
     struct HandshakeMessage: Codable {
         var command: String?
@@ -138,6 +140,7 @@ open class AntMediaClient: NSObject, AntMediaClientProtocol {
         var mode: String?
         var mainTrack: String?
         var trackList: [String]
+        var metaData: String?
     }
     
     public override init() {
@@ -188,6 +191,27 @@ open class AntMediaClient: NSObject, AntMediaClientProtocol {
         self.videoEnable = enable
     }
     
+    public func setMetaData(metaData: String) {
+        self.metaData = metaData
+    }
+    
+    public func updateMetadata(streamId: String = "", metaData: String) {
+        let targetStreamId = getStreamId(streamId)
+        
+        if isWebSocketConnected {
+            let updateMetadataMessage = [
+                COMMAND: "updateStreamMetaData",
+                STREAM_ID: targetStreamId,
+                "metaData": metaData
+            ] as [String: Any]
+            
+            webSocket?.write(string: updateMetadataMessage.json)
+            AntMediaClient.printf("Sending updateMetadata message for stream: \(targetStreamId)")
+        } else {
+            AntMediaClient.printf("WebSocket is not connected. Cannot update metadata for stream: \(targetStreamId)")
+        }
+    }
+    
     public func getStreamId(_ streamId: String = "") -> String {
         // backward compatibility
         if streamId.isEmpty {
@@ -211,7 +235,7 @@ open class AntMediaClient: NSObject, AntMediaClientProtocol {
             AntMediaClient.printf("Disable track id is not set \(String(describing: self.disableTrackId))")
         }
         
-        let handShakeMesage = HandshakeMessage(command: mode.getName(), streamId: streamId, token: token, video: self.videoEnable, audio: self.audioEnable, mainTrack: self.mainTrackId, trackList: trackList)
+        let handShakeMesage = HandshakeMessage(command: mode.getName(), streamId: streamId, token: token, video: self.videoEnable, audio: self.audioEnable, mainTrack: self.mainTrackId, trackList: trackList, metaData: self.metaData)
         
         let json = try! JSONEncoder().encode(handShakeMesage)
         return String(data: json, encoding: .utf8)!
