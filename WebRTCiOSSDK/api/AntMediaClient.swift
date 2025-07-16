@@ -235,7 +235,16 @@ open class AntMediaClient: NSObject, AntMediaClientProtocol {
             AntMediaClient.printf("Disable track id is not set \(String(describing: self.disableTrackId))")
         }
         
-        let handShakeMesage = HandshakeMessage(command: mode.getName(), streamId: streamId, token: token, video: self.videoEnable, audio: self.audioEnable, mainTrack: self.mainTrackId, trackList: trackList, metaData: self.metaData)
+        let handShakeMesage = HandshakeMessage(
+            command: mode.getName(),
+            streamId: streamId,
+            token: token,
+            video: self.videoEnable,
+            audio: self.audioEnable,
+            mainTrack: self.mainTrackId,
+            trackList: trackList,
+            metaData: mode == .play ? nil : self.metaData
+        )
         
         let json = try! JSONEncoder().encode(handShakeMesage)
         return String(data: json, encoding: .utf8)!
